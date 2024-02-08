@@ -1,0 +1,17 @@
+<script>
+    (async () => {
+        const mallocObj = await WebAssembly.instantiateStreaming(fetch("../malloc.wasm"), {})
+        mallocObj.instance.exports.init()
+        const readString = (ptr, len) => {
+            return new TextDecoder("utf-8").decode(new Uint8Array(mallocObj.instance.exports.mem.buffer, ptr, len))
+        }
+        const exampleObj = await WebAssembly.instantiateStreaming(fetch("example.wasm"), {
+            malloc: mallocObj.instance.exports,
+            log: {
+                print: (ptr, len) => {
+                    console.log(readString(ptr, len))
+                }
+            }
+        })
+    })()
+</script>
